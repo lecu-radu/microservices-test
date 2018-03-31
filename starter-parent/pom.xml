@@ -17,7 +17,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <project.version.type>SNAPSHORT</project.version.type>
+        <project.version.type>SNAPSHOT</project.version.type>
         <qualifier></qualifier>
     </properties>
     <dependencyManagement>
@@ -45,18 +45,24 @@
         <snapshotRepository>
             <id>project.local</id>
             <name>project</name>
-            <url>file:${project.basedir}/../snasphot/.repo</url>
+            <url>file:${project.basedir}/../.repo/snasphot</url>
         </snapshotRepository>
         <repository>
             <id>project.local</id>
             <name>project</name>
-            <url>file:${project.basedir}/../release/.repo</url>
+            <url>file:${project.basedir}/../.repo/release</url>
         </repository>
     </distributionManagement>
 
     <profiles>
         <profile>
-            <id>generateDeployPom</id>
+            <id>release</id>
+            <properties>
+                <project.version.type>RELEASE</project.version.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>deploy</id>
             <build>
                 <plugins>
                     <plugin>
@@ -65,28 +71,35 @@
                         <version>1.5</version>
                         <executions>
                             <execution>
+                                <id>default-cli</id>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
-                                <phase>validate</phase>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <scripts>
-                                <script>
-                                    <![CDATA[
-                                    String buildNumber = "git rev-list --count --all".execute().inputStream.readLines()[0]
-                                    def file = new File("pom.xml")
-                                    def deployFile = new File("deployPom.xml")
-                                    def text = file.text
+                                <configuration>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+                                    String currentBranch = "git symbolic-ref HEAD".execute().inputStream.readLines()[0]
+                                    String buildNumber = "git rev-list --count ${currentBranch}".execute().inputStream.readLines()[0]
+                                    def pomFile = new File("pom.xml")
+                                    def deployPomFileName = "deployPom.xml"
+                                    def deployPomFile = new File(deployPomFileName)
+                                    def text = pomFile.text
                                     text=text.replaceAll("\\\$\\{qualifier\\}","."+buildNumber)
                                     text=text.replaceAll("\\\$\\{project.version.type\\}","${project.version.type}")
                                     text=text.replaceAll("(?<=<project.version.type>)SNAPSHOT(?=</project.version.type>)","${project.version.type}")
-                                    deployFile.write(text)
+                                    deployPomFile.write(text)
+                                    def process= "cmd /c mvn clean deploy -f ${deployPomFileName}".execute()
+                                    if (process.waitFor()!=0){
+                                        throw new RuntimeException("process failed:\n" + process.err.text)
+                                    }
                                     ]]>
-                                </script>
-                            </scripts>
-                        </configuration>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+
+                            </execution>
+                        </executions>
                         <dependencies>
                             <dependency>
                                 <groupId>org.codehaus.groovy</groupId>
