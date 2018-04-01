@@ -71,7 +71,6 @@
                         <version>1.5</version>
                         <executions>
                             <execution>
-                                <id>default-cli</id>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
