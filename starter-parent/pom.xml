@@ -75,6 +75,7 @@
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
+                                <phase>install</phase>
                                 <configuration>
                                     <properties>
                                         <workingDir>${project.basedir}</workingDir>
@@ -84,16 +85,21 @@
                                             <![CDATA[
                                             String currentBranch = "git symbolic-ref HEAD".execute().inputStream.readLines()[0]
                                             String buildNumber = "git rev-list --count ${currentBranch}".execute().inputStream.readLines()[0]
+
+                                            def projectType="${project.version.type}"
+                                            projectType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
+
                                             def pomFile = new File("${workingDir}"+File.separator+"pom.xml")
-                                            def deployPomFileName = "${workingDir}"+File.separator+"deployPom.xml"
-                                            def deployPomFile = new File(deployPomFileName)
+                                            def deployPomFilePath = "${workingDir}"+File.separator+"deploy${projectType}Pom.xml"
+                                            def deployPomFile = new File(deployPomFilePath)
                                             def text = pomFile.text
+
                                             text=text.replaceAll("\\\$\\{qualifier\\}","."+buildNumber)
                                             text=text.replaceAll("(?<=<parent>[\\n\\t \\w.\\d<>/-]{0,999})(\\d+\\.\\d+\\.\\d+-)+SNAPSHOT(?=[\\n\\t \\w.\\d<>/-]{0,999}</parent>)","\$1${project.version.type}")
                                             text=text.replaceAll("\\\$\\{project.version.type\\}","${project.version.type}")
                                             text=text.replaceAll("(?<=<project.version.type>)SNAPSHOT(?=</project.version.type>)","${project.version.type}")
                                             deployPomFile.write(text)
-                                            def process= "cmd /c start /B mvn clean deploy -f ${deployPomFileName}".execute()
+                                            def process= "cmd /c start /B mvn deploy -f ${deployPomFilePath}".execute()
                                             if (process.waitFor()!=0){
                                                 throw new RuntimeException("process failed:\n" + process.err.text)
                                             }
