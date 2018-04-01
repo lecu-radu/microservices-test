@@ -11,5 +11,6 @@
     </parent>
 
     <artifactId>domain-interfaces</artifactId>
+    <version>1.0.0-${project.version.type}</version>
     <packaging>jar</packaging>
 </project>

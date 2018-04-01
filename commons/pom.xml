@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>commons</artifactId>
+    <version>1.0.0-${project.version.type}</version>
     <packaging>jar</packaging>
 
     <description>Contains utility classes used my multiple services.</description>
