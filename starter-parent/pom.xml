@@ -34,6 +34,29 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
+                    <version>1.5</version>
+                    <configuration>
+                        <properties>
+                            <workingDir>${project.basedir}</workingDir>
+                        </properties>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.groovy</groupId>
+                            <artifactId>groovy-all</artifactId>
+                            <version>2.4.3</version>
+                            <scope>runtime</scope>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -72,7 +95,6 @@
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.5</version>
                         <executions>
                             <execution>
                                 <id>generate</id>
@@ -81,9 +103,6 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <properties>
-                                        <workingDir>${project.basedir}</workingDir>
-                                    </properties>
                                     <scripts>
                                         <script>
                                             <![CDATA[
@@ -113,14 +132,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.codehaus.groovy</groupId>
-                                <artifactId>groovy-all</artifactId>
-                                <version>2.4.3</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
@@ -133,7 +144,6 @@
                     <plugin>
                         <groupId>org.codehaus.gmavenplus</groupId>
                         <artifactId>gmavenplus-plugin</artifactId>
-                        <version>1.5</version>
                         <executions>
                             <execution>
                                 <id>deploy</id>
@@ -142,9 +152,6 @@
                                 </goals>
                                 <phase>install</phase>
                                 <configuration>
-                                    <properties>
-                                        <workingDir>${project.basedir}</workingDir>
-                                    </properties>
                                     <scripts>
                                         <script>
                                             <![CDATA[
@@ -164,14 +171,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.codehaus.groovy</groupId>
-                                <artifactId>groovy-all</artifactId>
-                                <version>2.4.3</version>
-                                <scope>runtime</scope>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
