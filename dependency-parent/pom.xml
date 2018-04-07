@@ -19,7 +19,8 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <project.version.type>SNAPSHOT</project.version.type>
+        <project.type>SNAPSHOT</project.type>
+        <project.version.type>${project.type}</project.version.type>
 
         <spring-cloud.version>1.4.3.RELEASE</spring-cloud.version>
         <spring-cloud-security.version>1.2.2.RELEASE</spring-cloud-security.version>
@@ -148,9 +149,73 @@
         <profile>
             <id>release</id>
             <properties>
-                <project.version.type>RELEASE</project.version.type>
+                <project.type>RELEASE</project.type>
             </properties>
         </profile>
+        <profile>
+            <id>generate</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmavenplus</groupId>
+                        <artifactId>gmavenplus-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>generate</id>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <properties>
+                                        <workingDir>${project.basedir}</workingDir>
+                                    </properties>
+                                    <scripts>
+                                        <script>
+                                            <![CDATA[
+                                            String currentBranch = "git symbolic-ref HEAD".execute().inputStream.readLines()[0]
+                                            String buildNumber = "git rev-list --count ${currentBranch}".execute().inputStream.readLines()[0]
+
+                                            new File("${workingDir}"+File.separator+"qualifier.txt").write(buildNumber);
+
+                                            def projectTypes=Arrays.asList("SNAPSHOT","RELEASE")
+                                            for(String projectType:projectTypes){
+                                                def fileType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
+
+                                                def pomFile = new File("${workingDir}"+File.separator+"pom.xml")
+                                                def deployPomFilePath = "${workingDir}"+File.separator+"deploy${fileType}Pom.xml"
+                                                def deployPomFile = new File(deployPomFilePath)
+                                                def text = pomFile.text
+
+                                                text=text.replaceAll("\\\$\\{qualifier\\}","."+buildNumber)
+                                                text=text.replaceAll("(?<=<parent>[\\n\\t \\w.\\d<>/-]{0,999})(\\d+\\.\\d+\\.\\d+[-.])SNAPSHOT(?=[\\n\\t \\w.\\d<>/-]{0,999}</parent>)","\$1${projectType}")
+                                                text=text.replaceAll("\\\$\\{project.version.type\\}","${projectType}")
+                                                text=text.replaceAll("(?<=<project.version.type>)SNAPSHOT(?=</project.version.type>)","${projectType}")
+                                                deployPomFile.write(text)
+                                            }
+                                            ]]>
+                                        </script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.groovy</groupId>
+                                <artifactId>groovy-all</artifactId>
+                                <version>2.4.3</version>
+                                <scope>runtime</scope>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>deploy</id>
             <build>
@@ -161,6 +226,7 @@
                         <version>1.5</version>
                         <executions>
                             <execution>
+                                <id>deploy</id>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
@@ -172,23 +238,13 @@
                                     <scripts>
                                         <script>
                                             <![CDATA[
-                                            String currentBranch = "git symbolic-ref HEAD".execute().inputStream.readLines()[0]
-                                            String buildNumber = "git rev-list --count ${currentBranch}".execute().inputStream.readLines()[0]
+                                            def projectType="${project.type}"
+                                            fileType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
 
-                                            def projectType="${project.version.type}"
-                                            projectType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
-
-                                            def pomFile = new File("${workingDir}"+File.separator+"pom.xml")
-                                            def deployPomFilePath = "${workingDir}"+File.separator+"deploy${projectType}Pom.xml"
+                                            def deployPomFilePath = "${workingDir}"+File.separator+"deploy${fileType}Pom.xml"
                                             def deployPomFile = new File(deployPomFilePath)
-                                            def text = pomFile.text
 
-                                            text=text.replaceAll("\\\$\\{qualifier\\}","."+buildNumber)
-                                            text=text.replaceAll("(?<=<parent>[\\n\\t \\w.\\d<>/-]{0,999})(\\d+\\.\\d+\\.\\d+-)+SNAPSHOT(?=[\\n\\t \\w.\\d<>/-]{0,999}</parent>)","\$1${project.version.type}")
-                                            text=text.replaceAll("\\\$\\{project.version.type\\}","${project.version.type}")
-                                            text=text.replaceAll("(?<=<project.version.type>)SNAPSHOT(?=</project.version.type>)","${project.version.type}")
-                                            deployPomFile.write(text)
-                                            def process= "cmd /c start /B mvn deploy -f ${deployPomFilePath}".execute()
+                                            def process= "cmd /c start /B mvn clean deploy -f ${deployPomFilePath}".execute()
                                             if (process.waitFor()!=0){
                                                 throw new RuntimeException("process failed:\n" + process.err.text)
                                             }
