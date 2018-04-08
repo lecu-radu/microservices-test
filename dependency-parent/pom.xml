@@ -248,7 +248,7 @@
                                         <script>
                                             <![CDATA[
                                             def projectType="${project.type}"
-                                            fileType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
+                                            def fileType=projectType.charAt(0).toString()+projectType.substring(1).toLowerCase()
 
                                             def deployPomFilePath = "${workingDir}"+File.separator+"deploy${fileType}Pom.xml"
                                             def deployPomFile = new File(deployPomFilePath)
