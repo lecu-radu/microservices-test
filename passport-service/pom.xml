@@ -46,12 +46,6 @@
             <version>1.0.0-${project.version.type}</version>
         </dependency>
 
-        <!--Spring Boot-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
         <!--Spring Cloud-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
