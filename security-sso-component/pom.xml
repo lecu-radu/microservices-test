@@ -18,8 +18,8 @@
     <dependencies>
         <dependency>
             <groupId>ro.rasel</groupId>
-            <artifactId>spring-commons</artifactId>
-            <version>1.0.0-${project.version.type}</version>
+            <artifactId>commons</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <!--Spring Boot-->
