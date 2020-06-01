@@ -1,8 +1,5 @@
-del localhost-identity.jks
-del computername-identity.jks
-del localhost.cer
-del computername.cer
-del truststore.jks
+rm *.jks
+rm *.cer
 
 keytool -genkey -alias localhost -keyalg RSA -keystore localhost-identity.jks -deststoretype JKS -validity 1825 -keypass jkspass -storepass jkspass -dname "CN=localhost, OU=N/A, O=N/A, L=Bucharest, ST=Romania, C=RO correct?"
 keytool -genkey -alias desktop-1gn7l5l -keyalg RSA -keystore computername-identity.jks -deststoretype JKS -validity 1825 -keypass jkspass -storepass jkspass -dname "CN=%COMPUTERNAME%, OU=N/A, O=N/A, L=Bucharest, ST=Romania, C=RO correct?"

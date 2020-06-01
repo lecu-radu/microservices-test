@@ -1,0 +1,76 @@
+version: "3"
+services:
+  sso-auth-service:
+    image: radulecu/spring-microservices:sso-auth-service.latest
+    hostname: sso-auth-service
+    ports:
+      - 9999:9999
+  eureka-service:
+    image: radulecu/spring-microservices:eureka-service.latest
+    hostname: eureka-service
+    ports:
+      - 8761:8761
+    environment:
+      eureka.instance.hostname: "eureka-service"
+  zipkin-dashboard-service:
+    image: radulecu/spring-microservices:zipkin-dashboard-service.latest
+    hostname: zipkin-dashboard-service
+    ports:
+      - 9411:9411
+  bookmark-service:
+    image: radulecu/spring-microservices:bookmark-service.latest
+    hostname: bookmark-service
+    ports:
+      - 8082:8082
+    environment:
+      registry.server.hostname: "eureka-service"
+      spring.zipkin.base-url: http://zipkin-dashboard-service:9411/
+      server.ssl.client-auth: none
+  contact-service:
+    image: radulecu/spring-microservices:contact-service.latest
+    hostname: contact-service
+    ports:
+      - 8083:8083
+    environment:
+      registry.server.hostname: "eureka-service"
+      spring.zipkin.base-url: http://zipkin-dashboard-service:9411/
+      server.ssl.client-auth: none
+  passport-service:
+    image: radulecu/spring-microservices:passport-service.latest
+    hostname: passport-service
+    ports:
+      - 8084:8084
+    environment:
+      registry.server.hostname: "eureka-service"
+      spring.zipkin.base-url: http://zipkin-dashboard-service:9411/
+      server.ssl.client-auth: none
+#    depends_on:
+#      - eureka-service
+#      - zipkin-dashboard-service
+#  gateway-service:
+#    image: radulecu/spring-microservices:gateway-service.latest
+#    hostname: gateway-service
+#    ports:
+#      - 9024:9024
+#    environment:
+#      registry.server.hostname: "eureka-service"
+#      spring.zipkin.base-url: http://zipkin-dashboard-service:9411/
+#      security.oauth2.client.accessTokenUri: https://sso-auth-service:9999/oauth/token
+#      security.oauth2.client.userAuthorizationUri: https://localhost:9999/sso/oauth/authorize
+#      server.ssl.client-auth: none
+#    depends_on:
+#      - eureka-service
+#      - zipkin-dashboard-service
+  resource-gateway-service:
+    image: radulecu/spring-microservices:resource-gateway-service.latest
+    hostname: resource-gateway-service
+    ports:
+      - 9025:9025
+    environment:
+      registry.server.hostname: "eureka-service"
+      spring.zipkin.base-url: http://zipkin-dashboard-service:9411/
+      security.server.url: https://sso-auth-service:9999/sso
+      server.ssl.client-auth: none
+#    depends_on:
+#      - eureka-service
+#      - zipkin-dashboard-service
